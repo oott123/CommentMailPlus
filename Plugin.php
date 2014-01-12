@@ -140,7 +140,7 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
         //判断发送
         //1.发送博主邮件
         if(in_array('to_owner', $settings->other) && in_array($tempinfo['status'], $settings->status)){
-            $this_mail = $tempinfo['originalMail'];
+            $this_mail = $tempinfo['mail'];
             $to_mail = $settings->mail;
             if(!$to_mail){
                 Typecho_Widget::widget('Widget_Users_Author@' . $tempinfo['cid'], array('uid' => $tempinfo['authorId']))->to($user);
