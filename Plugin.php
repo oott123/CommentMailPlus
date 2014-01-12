@@ -167,9 +167,9 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
         //获取发送标题
         $title = '';
         if($toGuest){
-            $title = $settings->guestSubject;
+            $title = $settings->titleForGuest;
         }else{
-            $title = $title = $settings->ownerSubject;
+            $title = $title = $settings->titleForOwner;
         }
         return str_replace(array('{title}','{site}'), array($tempinfo['title'],$tempinfo['site']), $title);
     }
@@ -207,7 +207,7 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
             'subject' => $title,
             'html' => $body,
             );
-        $url = 'https://api.mailgun.net/v2/aaa'.$domain.'/messages';
+        $url = 'https://api.mailgun.net/v2/'.$domain.'/messages';
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_USERPWD,'api:'.$api_key);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -224,13 +224,7 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
         $result = substr($result, $headerSize);
         $res = json_decode($result,1);
         self::_log('curl excuted...'.print_r(curl_getinfo($ch),1),'debug');
-        if(curl_getinfo($curl,CURLINFO_HTTP_CODE)==200){
-            //发送成功
-            self::_log($to_mail.'邮件发送成功：'.$res['message']);
-        }else{
-            //发送失败
-            self::_log($to_mail.'邮件发送失败：'.$res['message']);
-        }
+        self::_log($to_mail.'邮件发送：'.$res['message']);
     }
     public static function _log($msg,$file='error'){
         //记录日志
