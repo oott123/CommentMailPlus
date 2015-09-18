@@ -19,9 +19,7 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
         if (!function_exists('curl_init')) {
             throw new Typecho_Plugin_Exception(_t('对不起, 您的主机没有curl功能, 无法正常使用此插件'));
         }
-
         Helper::addAction('comment-mail-plus', 'CommentMailPlus_Action');
-
         Typecho_Plugin::factory('Widget_Feedback')->finishComment = array('CommentMailPlus_Plugin', 'toMail');
         return _t('请到设置面板设置Mailgun。');
     }
@@ -111,23 +109,24 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
         $settings=Helper::options()->plugin('CommentMailPlus');
         $options = Typecho_Widget::widget('Widget_Options');
         //邮件模板变量
-        $tempinfo['site'] = $options->title;
-        $tempinfo['title'] = $post->title;
-        $tempinfo['cid']=$post->cid;
-        $tempinfo['coid']=$post->coid;
-        $tempinfo['created']=$post->created;
-        $tempinfo['timezone'] = $options->timezone;
-        $tempinfo['author']=$post->author;
-        $tempinfo['authorId']=$post->authorId;
-        $tempinfo['ownerId']=$post->ownerId;
-        $tempinfo['mail']=$post->mail;
-        $tempinfo['ip']=$post->ip;
-        $tempinfo['title']=$post->title;
-        $tempinfo['text']=$post->text;
-        $tempinfo['permalink']=$post->permalink;
-        $tempinfo['status']=$post->status;
-        $tempinfo['parent']=$post->parent;
-        $tempinfo['manage']= $options->siteUrl."admin/manage-comments.php";
+        $tempinfo['site']      = $options->title;
+        $tempinfo['siteUrl']   = $options->siteUrl;
+        $tempinfo['title']     = $post->title;
+        $tempinfo['cid']       = $post->cid;
+        $tempinfo['coid']      = $post->coid;
+        $tempinfo['created']   = $post->created;
+        $tempinfo['timezone']  = $options->timezone;
+        $tempinfo['author']    = $post->author;
+        $tempinfo['authorId']  = $post->authorId;
+        $tempinfo['ownerId']   = $post->ownerId;
+        $tempinfo['mail']      = $post->mail;
+        $tempinfo['ip']        = $post->ip;
+        $tempinfo['title']     = $post->title;
+        $tempinfo['text']      = $post->text;
+        $tempinfo['permalink'] = $post->permalink;
+        $tempinfo['status']    = $post->status;
+        $tempinfo['parent']    = $post->parent;
+        $tempinfo['manage']    = $options->siteUrl."admin/manage-comments.php";
         $_db = Typecho_Db::get();
         $original = $_db->fetchRow($_db::get()->select('author', 'mail', 'text')
                     ->from('table.comments')
@@ -180,8 +179,8 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
         $search=$replace=array();
         if($toGuest){
             $dir.='guest.html';
-            $search = array('{site}','{title}','{author_p}','{author}','{mail}','{permalink}','{text}','{text_p}','{time}');
-            $replace = array($tempinfo['site'],$tempinfo['title'],$tempinfo['originalAuthor'],$tempinfo['author'], $tempinfo['mail'],$tempinfo['permalink'],$tempinfo['text'],$tempinfo['originalText'],$time);
+            $search = array('{site}','{siteUrl}', '{title}','{author_p}','{author}','{mail}','{permalink}','{text}','{text_p}','{time}');
+            $replace = array($tempinfo['site'],$tempinfo['siteUrl'],$tempinfo['title'],$tempinfo['originalAuthor'],$tempinfo['author'], $tempinfo['mail'],$tempinfo['permalink'],$tempinfo['text'],$tempinfo['originalText'],$time);
         }else{
             $dir.='owner.html';
             $status = array(
@@ -189,8 +188,8 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
                 "waiting"  => '待审',
                 "spam"     => '垃圾'
             );
-            $search = array('{site}','{title}','{author}','{ip}','{mail}','{permalink}','{manage}','{text}','{time}','{status}');
-            $replace = array($tempinfo['site'],$tempinfo['title'],$tempinfo['author'],$tempinfo['ip'],$tempinfo['mail'],$tempinfo['permalink'],$tempinfo['manage'],$tempinfo['text'],$time,$status[$tempinfo['status']]);
+            $search = array('{site}','{siteUrl}', '{title}','{author}','{ip}','{mail}','{permalink}','{manage}','{text}','{time}','{status}');
+            $replace = array($tempinfo['site'],$tempinfo['siteUrl'],$tempinfo['title'],$tempinfo['author'],$tempinfo['ip'],$tempinfo['mail'],$tempinfo['permalink'],$tempinfo['manage'],$tempinfo['text'],$time,$status[$tempinfo['status']]);
         }
         $html = file_get_contents($dir);
         return str_replace($search, $replace, $html);
