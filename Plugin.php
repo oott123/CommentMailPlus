@@ -158,7 +158,7 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
             $to_mail = $tempinfo['originalMail'];
             $from_mail = $settings->mailAddress;
             $title = self::_getTitle(true,$settings,$tempinfo);
-            $body = self::_getHtml(false,$tempinfo);
+            $body = self::_getHtml(true,$tempinfo);
             self::_sendMail($to_mail,$from_mail,$title,$body,$settings);
         }
     }
