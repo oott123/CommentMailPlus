@@ -231,7 +231,7 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
         if(!in_array('to_log', $settings->other)) return false;
         //开发者模式
         if($file=='debug' && true) return false;
-        $filename = dirname(__FILE__).'/'.$file.'_log.php';
+        $filename = dirname(__FILE__).'/logs/'.$file.'_log.php';
         if(!is_file($filename)){
             file_put_contents($filename, '<?php $log = <<<LOG');
         }
