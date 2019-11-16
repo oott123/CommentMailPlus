@@ -4,7 +4,7 @@
  *
  * @package CommentMailPlus
  * @author oott123
- * @version 0.0.1
+ * @version 0.0.2
  * @link http://oott123.com
  */
 class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
@@ -206,7 +206,7 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
             'subject' => $title,
             'html' => $body,
             );
-        $url = 'https://api.mailgun.net/v2/'.$domain.'/messages';
+        $url = 'https://api.mailgun.net/v3/'.$domain.'/messages';
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_USERPWD,'api:'.$api_key);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
