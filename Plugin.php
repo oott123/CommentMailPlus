@@ -64,7 +64,7 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
                     关键性错误日志将自动记录到 ./CommentMailPlus/logs/error_log.php 中。<br />
                     '));
         $form->addInput($other->multiMode());
-        $key = new Typecho_Widget_Helper_Form_Element_Text('key', NULL, 'key-',
+        $key = new Typecho_Widget_Helper_Form_Element_Text('key', NULL, 'xxxxxxxxxxxxxxxxxxx-xxxxxx-xxxxxx',
                 _t('MailGun API 密钥'), _t('请填写在<a href="https://mailgun.com/"> MailGun </a>申请的密钥，可在<a href="https://app.mailgun.com/app/account/security/api_keys">个人页</a>中查看 '));
         $form->addInput($key->addRule('required', _t('密钥不能为空')));
         $domain = new Typecho_Widget_Helper_Form_Element_Text('domain', NULL, 'samples.mailgun.org',
