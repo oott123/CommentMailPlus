@@ -1,10 +1,10 @@
 <?php
 /**
- * 评论回复通过MailGun发送邮件提醒
+ * 评论回复通过 MailGun 发送邮件提醒
  *
  * @package CommentMailPlus
  * @author oott123
- * @version 0.0.2
+ * @version 0.0.3
  * @link http://oott123.com
  */
 class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
@@ -17,11 +17,11 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
      */
     public static function activate() {
         if (!function_exists('curl_init')) {
-            throw new Typecho_Plugin_Exception(_t('对不起, 您的主机没有curl功能, 无法正常使用此插件'));
+            throw new Typecho_Plugin_Exception(_t('检测到当前 PHP 环境没有 curl 组件, 无法正常使用此插件'));
         }
         Helper::addAction('comment-mail-plus', 'CommentMailPlus_Action');
         Typecho_Plugin::factory('Widget_Feedback')->finishComment = array('CommentMailPlus_Plugin', 'toMail');
-        return _t('请到设置面板设置Mailgun。');
+        return _t('请到设置面板正确配置 MailGun 才可正常工作。');
     }
 
     /**
@@ -45,7 +45,7 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
      */
     public static function config(Typecho_Widget_Helper_Form $form) {
         $mail = new Typecho_Widget_Helper_Form_Element_Text('mail', NULL, NULL,
-                _t('接收邮箱'),_t('接收邮件用的信箱,如为空则使用文章作者个人设置中的邮箱！'));
+                _t('收件人邮箱'),_t('接收邮件用的信箱，为空则使用文章作者个人设置中的邮箱！'));
         $form->addInput($mail->addRule('email', _t('请填写正确的邮箱！')));
 
         $status = new Typecho_Widget_Helper_Form_Element_Checkbox('status',
@@ -56,23 +56,23 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
         $form->addInput($status);
 
         $other = new Typecho_Widget_Helper_Form_Element_Checkbox('other',
-                array('to_owner' => '有评论及回复时，发邮件通知博主。',
-                    'to_guest' => '评论被回复时，发邮件通知评论者。',
-                    'to_me'=>'自己回复自己的评论时，发邮件通知。(同时针对博主和访客)',
-                    'to_log' => '记录邮件发送日志。'),
-                array('to_owner','to_guest'), '其他设置',_t('如果选上"记录邮件发送日志"选项，则会在./CommentMailPlus/mail_log.php 文件中记录发送信息。<br />
-                    关键性错误日志将自动记录到./CommentMailPlus/error_log.php文件中。<br />
+                array('to_owner' => '有评论及回复时，发邮件通知博主',
+                    'to_guest' => '评论被回复时，发邮件通知评论者',
+                    'to_me'=>'自己回复自己的评论时（同时针对博主和访客），发邮件通知',
+                    'to_log' => '记录邮件发送日志'),
+                array('to_owner','to_guest'), '其他设置',_t('如果勾选“记录邮件发送日志”选项，则会在 ./CommentMailPlus/logs/mail_log.php 中记录发送信息。<br />
+                    关键性错误日志将自动记录到 ./CommentMailPlus/logs/error_log.php 中。<br />
                     '));
         $form->addInput($other->multiMode());
-        $key = new Typecho_Widget_Helper_Form_Element_Text('key', NULL, 'key-',
-                _t('Mailgun API 密钥'), _t('请填写在<a href="https://mailgun.com/">Mailgun</a>申请的密钥'));
+        $key = new Typecho_Widget_Helper_Form_Element_Text('key', NULL, 'xxxxxxxxxxxxxxxxxxx-xxxxxx-xxxxxx',
+                _t('MailGun API 密钥'), _t('请填写在<a href="https://mailgun.com/"> MailGun </a>申请的密钥，可在<a href="https://app.mailgun.com/app/account/security/api_keys">个人页</a>中查看 '));
         $form->addInput($key->addRule('required', _t('密钥不能为空')));
         $domain = new Typecho_Widget_Helper_Form_Element_Text('domain', NULL, 'samples.mailgun.org',
-                _t('Mailgun域名'), _t('请填写您的邮件域名'));
+                _t('MailGun 域名'), _t('请填写您的邮件域名，若使用官方提供的测试域名可能存在其他问题'));
         $form->addInput($domain->addRule('required', _t('邮件域名不能为空')));
         $mailAddress = new Typecho_Widget_Helper_Form_Element_Text('mailAddress', NULL, 'no-reply@samples.mailgun.org',
                 _t('发件人邮箱'));
-        $form->addInput($mailAddress->addRule('required', _t('发件人邮箱不能为空')));
+        $form->addInput($mailAddress->addRule('required', _t('发件人地址不能为空')));
         $senderName = new Typecho_Widget_Helper_Form_Element_Text('senderName', NULL, '评论提醒',
                 _t('发件人显示名'));
         $form->addInput($senderName);
@@ -231,7 +231,7 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
         if(!in_array('to_log', $settings->other)) return false;
         //开发者模式
         if($file=='debug' && true) return false;
-        $filename = dirname(__FILE__).'/'.$file.'_log.php';
+        $filename = dirname(__FILE__).'/logs/'.$file.'_log.php';
         if(!is_file($filename)){
             file_put_contents($filename, '<?php $log = <<<LOG');
         }

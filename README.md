@@ -1,19 +1,38 @@
 # CommentMailPlus
 
-## typecho下使用mailgun发送评论邮件提醒
+## 评论邮件通知插件
+
+一款 Typecho 评论邮件提醒插件
+
+- 基于 PHP 插件 cURL 实现
+- 基于 MailGun API 实现
 
 ### 安装方法
 
-在`typecho/usr/plugins/`下新建一个`CommentMailPlus`文件夹，将git中的所有文件放入，在后台安装插件即可。
+进入插件目录
+
+```bash
+$ cd typecho/usr/plugins/
+```
+
+> 小贴士：此处路径请根据实际网址路径进行调整，此处仅为样例。
+
+克隆插件文件
+
+```bash
+$ git clone https://github.com/oott123/CommentMailPlus.git
+```
+
+在后台启用即可
 
 ### 适用环境
 
-此方法发送邮件利用curl库连接MailGun的HTTPS服务，具有到达率高，延迟低等特点，适合于无法使用SMTP的使用者使用。
+本插件发送邮件利用 cURL 组件连接 MailGun 的 HTTPS 接口，具有到达率高，延迟低等特点，适合于无法使用 SMTP 的环境使用。
 
-如果你想使用MailGun的服务而没有curl库，可以尝试安装CommentToMail插件，然后参考[MailGun User Manual](http://documentation.mailgun.com/user_manual.html#smtp-pop3-and-imap)上的相关说明设置SMTP服务。
+若当前 PHP 环境无法修改以支持 cURL 组件，可以尝试使用 [CommentToMail](http://docs.typecho.org/plugins/commenttomail) 插件，然后参照 [MailGun User Manual](https://documentation.mailgun.com/en/latest/user_manual.html#introduction) 上的相关说明设置 SMTP 服务。
 
 经测试，SAE可用。
 
 ### 其它问题
 
-请参考MailGun的[User Manual](http://documentation.mailgun.com/)。
+有问题请发 issues ，欢迎提交代码。其他关于 MailGun 说明可在[官方文档](https://documentation.mailgun.com/en/latest/)中查看。
