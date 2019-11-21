@@ -127,6 +127,11 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
         $tempinfo['status']    = $post->status;
         $tempinfo['parent']    = $post->parent;
         $tempinfo['manage']    = $options->siteUrl."admin/manage-comments.php";
+        $_db = Typecho_Db::get();
+        $original = $_db->fetchRow($_db::get()->select('author', 'mail', 'text')
+                    ->from('table.comments')
+                    ->where('coid = ?', $tempinfo['parent']));
+        //var_dump($original);die();
 
         //判断发送
         //1.发送博主邮件
@@ -144,25 +149,22 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
                 $body = self::_getHtml(false,$tempinfo);
                 self::_sendMail($to_mail,$from_mail,$title,$body,$settings);
             }
-        }else{
-            $_db = Typecho_Db::get();
-            $original = $_db->fetchRow($_db::get()->select('author', 'mail', 'text')
-                        ->from('table.comments')
-                        ->where('coid = ?', $tempinfo['parent']));
-            //var_dump($original);die();
+        }
+        //2.发送评论者邮件
+        //判断是否为回复评论
+        $emptyResult = empty($original);
+        if ($emptyResult == false){
             $tempinfo['originalMail'] = $original['mail'];
             $tempinfo['originalText'] = $original['text'];
             $tempinfo['originalAuthor'] = $original['author'];
-            //2.发送评论者邮件
-            if(in_array('to_guest', $settings->other) && 'approved'==$tempinfo['status'] && $tempinfo['originalMail']){
-                $to_mail = $tempinfo['originalMail'];
-                $from_mail = $settings->mailAddress;
-                $title = self::_getTitle(true,$settings,$tempinfo);
-                $body = self::_getHtml(true,$tempinfo);
-                self::_sendMail($to_mail,$from_mail,$title,$body,$settings);
-            }
         }
-        
+        if(in_array('to_guest', $settings->other) && 'approved'==$tempinfo['status'] && $tempinfo['originalMail']){
+            $to_mail = $tempinfo['originalMail'];
+            $from_mail = $settings->mailAddress;
+            $title = self::_getTitle(true,$settings,$tempinfo);
+            $body = self::_getHtml(true,$tempinfo);
+            self::_sendMail($to_mail,$from_mail,$title,$body,$settings);
+        }
     }
     public static function _getTitle($toGuest,$settings,$tempinfo){
         //获取发送标题
