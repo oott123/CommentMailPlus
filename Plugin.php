@@ -153,8 +153,7 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
         }
         //2.发送评论者邮件
         //判断是否为回复评论，是则发，否则跳。
-        $emptyResult = empty($original);
-        if ($emptyResult == false){
+        if (!empty($original)){
             $tempinfo['originalMail'] = $original['mail'];
             $tempinfo['originalText'] = $original['text'];
             $tempinfo['originalAuthor'] = $original['author'];
