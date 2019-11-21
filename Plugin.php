@@ -135,6 +135,7 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
 
         //判断发送
         //1.发送博主邮件
+        //无需判断，先发为敬。
         if(in_array('to_owner', $settings->other) && in_array($tempinfo['status'], $settings->status)){
             $this_mail = $tempinfo['mail'];
             $to_mail = $settings->mail;
@@ -151,20 +152,21 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
             }
         }
         //2.发送评论者邮件
-        //判断是否为回复评论
+        //判断是否为回复评论，是则发，否则跳。
         $emptyResult = empty($original);
         if ($emptyResult == false){
             $tempinfo['originalMail'] = $original['mail'];
             $tempinfo['originalText'] = $original['text'];
             $tempinfo['originalAuthor'] = $original['author'];
+            if(in_array('to_guest', $settings->other) && 'approved'==$tempinfo['status'] && $tempinfo['originalMail']){
+                $to_mail = $tempinfo['originalMail'];
+                $from_mail = $settings->mailAddress;
+                $title = self::_getTitle(true,$settings,$tempinfo);
+                $body = self::_getHtml(true,$tempinfo);
+                self::_sendMail($to_mail,$from_mail,$title,$body,$settings);
+            }
         }
-        if(in_array('to_guest', $settings->other) && 'approved'==$tempinfo['status'] && $tempinfo['originalMail']){
-            $to_mail = $tempinfo['originalMail'];
-            $from_mail = $settings->mailAddress;
-            $title = self::_getTitle(true,$settings,$tempinfo);
-            $body = self::_getHtml(true,$tempinfo);
-            self::_sendMail($to_mail,$from_mail,$title,$body,$settings);
-        }
+        
     }
     public static function _getTitle($toGuest,$settings,$tempinfo){
         //获取发送标题
