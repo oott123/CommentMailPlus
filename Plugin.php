@@ -228,7 +228,7 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
         $result = substr($result, $headerSize);
         $res = json_decode($result,1);
         self::_log('curl excuted...'.print_r(curl_getinfo($ch),1),'debug');
-        self::_log($to_mail.'邮件发送：'.$res['message']);
+        self::_log($to_mail.' '.'Sending: '.$res['message']);
     }
     public static function _log($msg,$file='error'){
         //记录日志
@@ -241,7 +241,7 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
             file_put_contents($filename, '<?php $log = <<<LOG');
         }
         $log = fopen($filename, 'a');
-        fwrite($log, date('[Y-m-d H:i:s]').$msg.PHP_EOL);
+        fwrite($log, date('[Y-m-d H:i:s]').' '.$msg.PHP_EOL);
         fclose($log);
         return true;
     }
