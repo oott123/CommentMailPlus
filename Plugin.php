@@ -4,7 +4,7 @@
  *
  * @package CommentMailPlus
  * @author oott123
- * @version 0.0.3
+ * @version 0.0.4
  * @link http://oott123.com
  */
 class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
@@ -17,7 +17,7 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
      */
     public static function activate() {
         if (!function_exists('curl_init')) {
-            throw new Typecho_Plugin_Exception(_t('检测到当前 PHP 环境没有 curl 组件, 无法正常使用此插件'));
+            throw new Typecho_Plugin_Exception(_t('检测到当前 PHP 环境没有 cURL 组件, 无法正常使用此插件'));
         }
         Helper::addAction('comment-mail-plus', 'CommentMailPlus_Action');
         Typecho_Plugin::factory('Widget_Feedback')->finishComment = array('CommentMailPlus_Plugin', 'toMail');
@@ -127,14 +127,6 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
         $tempinfo['status']    = $post->status;
         $tempinfo['parent']    = $post->parent;
         $tempinfo['manage']    = $options->siteUrl."admin/manage-comments.php";
-        $_db = Typecho_Db::get();
-        $original = $_db->fetchRow($_db::get()->select('author', 'mail', 'text')
-                    ->from('table.comments')
-                    ->where('coid = ?', $tempinfo['parent']));
-        //var_dump($original);die();
-        $tempinfo['originalMail'] = $original['mail'];
-        $tempinfo['originalText'] = $original['text'];
-        $tempinfo['originalAuthor'] = $original['author'];
 
         //判断发送
         //1.发送博主邮件
@@ -152,15 +144,25 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
                 $body = self::_getHtml(false,$tempinfo);
                 self::_sendMail($to_mail,$from_mail,$title,$body,$settings);
             }
+        }else{
+            $_db = Typecho_Db::get();
+            $original = $_db->fetchRow($_db::get()->select('author', 'mail', 'text')
+                        ->from('table.comments')
+                        ->where('coid = ?', $tempinfo['parent']));
+            //var_dump($original);die();
+            $tempinfo['originalMail'] = $original['mail'];
+            $tempinfo['originalText'] = $original['text'];
+            $tempinfo['originalAuthor'] = $original['author'];
+            //2.发送评论者邮件
+            if(in_array('to_guest', $settings->other) && 'approved'==$tempinfo['status'] && $tempinfo['originalMail']){
+                $to_mail = $tempinfo['originalMail'];
+                $from_mail = $settings->mailAddress;
+                $title = self::_getTitle(true,$settings,$tempinfo);
+                $body = self::_getHtml(true,$tempinfo);
+                self::_sendMail($to_mail,$from_mail,$title,$body,$settings);
+            }
         }
-        //2.发送评论者邮件
-        if(in_array('to_guest', $settings->other) && 'approved'==$tempinfo['status'] && $tempinfo['originalMail']){
-            $to_mail = $tempinfo['originalMail'];
-            $from_mail = $settings->mailAddress;
-            $title = self::_getTitle(true,$settings,$tempinfo);
-            $body = self::_getHtml(true,$tempinfo);
-            self::_sendMail($to_mail,$from_mail,$title,$body,$settings);
-        }
+        
     }
     public static function _getTitle($toGuest,$settings,$tempinfo){
         //获取发送标题
