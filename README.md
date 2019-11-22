@@ -33,6 +33,10 @@ $ git clone https://github.com/oott123/CommentMailPlus.git
 
 经测试，SAE可用。
 
+### 感谢
+
+[@Cain](https://github.com/Vndroid)
+
 ### 其它问题
 
 有问题请发 issues ，欢迎提交代码。其他关于 MailGun 说明可在[官方文档](https://documentation.mailgun.com/en/latest/)中查看。

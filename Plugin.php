@@ -4,7 +4,7 @@
  *
  * @package CommentMailPlus
  * @author oott123
- * @version 0.0.3
+ * @version 0.0.4
  * @link http://oott123.com
  */
 class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
@@ -17,7 +17,7 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
      */
     public static function activate() {
         if (!function_exists('curl_init')) {
-            throw new Typecho_Plugin_Exception(_t('检测到当前 PHP 环境没有 curl 组件, 无法正常使用此插件'));
+            throw new Typecho_Plugin_Exception(_t('检测到当前 PHP 环境没有 cURL 组件, 无法正常使用此插件'));
         }
         Helper::addAction('comment-mail-plus', 'CommentMailPlus_Action');
         Typecho_Plugin::factory('Widget_Feedback')->finishComment = array('CommentMailPlus_Plugin', 'toMail');
@@ -132,12 +132,10 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
                     ->from('table.comments')
                     ->where('coid = ?', $tempinfo['parent']));
         //var_dump($original);die();
-        $tempinfo['originalMail'] = $original['mail'];
-        $tempinfo['originalText'] = $original['text'];
-        $tempinfo['originalAuthor'] = $original['author'];
 
         //判断发送
         //1.发送博主邮件
+        //无需判断，先发为敬。
         if(in_array('to_owner', $settings->other) && in_array($tempinfo['status'], $settings->status)){
             $this_mail = $tempinfo['mail'];
             $to_mail = $settings->mail;
@@ -154,13 +152,20 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
             }
         }
         //2.发送评论者邮件
-        if(in_array('to_guest', $settings->other) && 'approved'==$tempinfo['status'] && $tempinfo['originalMail']){
-            $to_mail = $tempinfo['originalMail'];
-            $from_mail = $settings->mailAddress;
-            $title = self::_getTitle(true,$settings,$tempinfo);
-            $body = self::_getHtml(true,$tempinfo);
-            self::_sendMail($to_mail,$from_mail,$title,$body,$settings);
+        //判断是否为回复评论，是则发，否则跳。
+        if (!empty($original)){
+            $tempinfo['originalMail'] = $original['mail'];
+            $tempinfo['originalText'] = $original['text'];
+            $tempinfo['originalAuthor'] = $original['author'];
+            if(in_array('to_guest', $settings->other) && 'approved'==$tempinfo['status'] && $tempinfo['originalMail']){
+                $to_mail = $tempinfo['originalMail'];
+                $from_mail = $settings->mailAddress;
+                $title = self::_getTitle(true,$settings,$tempinfo);
+                $body = self::_getHtml(true,$tempinfo);
+                self::_sendMail($to_mail,$from_mail,$title,$body,$settings);
+            }
         }
+        
     }
     public static function _getTitle($toGuest,$settings,$tempinfo){
         //获取发送标题
@@ -223,7 +228,7 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
         $result = substr($result, $headerSize);
         $res = json_decode($result,1);
         self::_log('curl excuted...'.print_r(curl_getinfo($ch),1),'debug');
-        self::_log($to_mail.'邮件发送：'.$res['message']);
+        self::_log($to_mail.' '.'Sending: '.$res['message']);
     }
     public static function _log($msg,$file='error'){
         //记录日志
@@ -236,7 +241,7 @@ class CommentMailPlus_Plugin implements Typecho_Plugin_Interface {
             file_put_contents($filename, '<?php $log = <<<LOG');
         }
         $log = fopen($filename, 'a');
-        fwrite($log, date('[Y-m-d H:i:s]').$msg.PHP_EOL);
+        fwrite($log, date('[Y-m-d H:i:s]').' '.$msg.PHP_EOL);
         fclose($log);
         return true;
     }
